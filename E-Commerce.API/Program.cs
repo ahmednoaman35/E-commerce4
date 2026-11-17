@@ -1,7 +1,4 @@
-using Domain.Contracts;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
-using Persistence.Data;
+using E_Commerce.API.Extensions;
 
 namespace E_Commerce.API
 {
@@ -13,51 +10,44 @@ namespace E_Commerce.API
 
             // Add services to the DI container.
 
-            builder.Services.AddControllers();
-            builder.Services.AddScoped<IDbInitializer, DbInitializer>();
-            builder.Services.AddDbContext<StoreContext>(options =>
-            {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
-            });
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            #region Services
+            builder.Services.AddCoreServices(builder.Configuration);
+            builder.Services.AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddPresentationServices();
+            #endregion
+
+
 
             var app = builder.Build();
 
 
-            await InitializeDbAsync(app);
+            #region PipeLines
 
 
-            // Configure the HTTP request pipeline.
+            await app.SeedDbAsync();
+
+            app.UseCustomExceptionMiddleware();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
+            app.UseStaticFiles();
+            app.UseCors("CORSPolicy");
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
-
             app.MapControllers();
 
             app.Run();
+            #endregion
 
 
 
-            async Task InitializeDbAsync(WebApplication app)
-            {
-                // Create Object from Type That Implements IDbInitializer 
-                using var scope = app.Services.CreateScope();
-                var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
 
-                await dbInitializer.InitializeAsync();
-            }
         }
-
-
-
     }
 }
