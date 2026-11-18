@@ -8,7 +8,7 @@ using Services.Specifications;
 namespace Services
 {
     // Primary Constructor C# 12.0 Feature 
-    class ProductService(IUnitOfWork unitOfWork, IMapper mapper) : IProductService
+   public class  ProductService(IUnitOfWork unitOfWork, IMapper mapper) : IProductService
     {
         public async Task<IEnumerable<BrandResultDTO>> GetAllBrandsAsync()
         {
