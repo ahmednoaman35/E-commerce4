@@ -13,7 +13,7 @@ global using OrderAddress = Domain.Entities.OrderEntities.Address;
 global using UserAddress = Domain.Entities.Identity.Address;
 namespace Services
 {
-    internal class AuthenticationService(UserManager<User> userManager,
+    public class AuthenticationService(UserManager<User> userManager,
         IOptions<JwtOptions> options,
         IMapper mapper)
         : IAuthenticationService
