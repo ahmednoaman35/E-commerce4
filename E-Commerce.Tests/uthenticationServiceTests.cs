@@ -97,5 +97,58 @@ namespace E_Commerce.Tests
             Assert.Equal("x@test.com", result.Email);
             Assert.Equal(3, result.Token.Split('.').Length);
         }
+
+
+        [Fact]
+        public async Task RegisterAsync_CreateFails_ThrowsValidationException()
+        {
+            // Arrange
+            var failed = IdentityResult.Failed(
+                new IdentityError { Description = "Password is too weak" });
+
+            _userManager.Setup(m => m.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
+                        .ReturnsAsync(failed);
+
+            var register = new RegisterDTO
+            {
+                Email = "new@test.com",
+                DisplayName = "New User",
+                UserName = "newuser",
+                PhoneNumber = "01000000000",
+                Password = "123"
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ValidationException>(
+                () => _sut.RegisterAsync(register));
+        }
+
+        [Fact]
+        public async Task RegisterAsync_ValidData_ReturnsUserWithToken()
+        {
+            // Arrange
+            _userManager.Setup(m => m.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
+                        .ReturnsAsync(IdentityResult.Success);
+
+            _userManager.Setup(m => m.GetRolesAsync(It.IsAny<User>()))
+                        .ReturnsAsync(new List<string>());
+
+            var register = new RegisterDTO
+            {
+                Email = "new@test.com",
+                DisplayName = "New User",
+                UserName = "newuser",
+                PhoneNumber = "01000000000",
+                Password = "Pass@123"
+            };
+
+            // Act
+            var result = await _sut.RegisterAsync(register);
+
+            // Assert
+            Assert.Equal("New User", result.DisplayName);
+            Assert.Equal("new@test.com", result.Email);
+            Assert.Equal(3, result.Token.Split('.').Length);
+        }
     }
 }
